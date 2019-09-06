@@ -1,0 +1,8 @@
+{
+    "accessory": "SunricherWifi",
+    "name": "Ambient light",
+    "ip": "10.1.1.4",
+    "port": 8899,
+    "id": 1,
+    "type": "rgbw"
+}
