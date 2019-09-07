@@ -53,12 +53,21 @@ class SunricherService {
         };
 
         this.sendMessage = async message => {
-            let result;
-            try {
-                result = await this.tcpClient.send(message);
-            } catch (err) {
-                this._log.error(`SunricherService: send message error '${err.message || err}'\n`, err);
-                result = false;
+            let result = false;
+            let retryCount = 0;
+            const maxRetryCount = 3;
+            while (!result && retryCount < maxRetryCount) {
+                ++retryCount;
+                
+                try {
+                    result = await this.tcpClient.send(message);
+                } catch (err) {
+                    this._log.error(`SunricherService: send message error '${err.message || err}'\n`, err);
+                    result = false;
+                    if (retryCount < maxRetryCount) {
+                        await Utils.Sleep(10);
+                    }
+                }
             }
 
             return result;
