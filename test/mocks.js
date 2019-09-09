@@ -6,25 +6,25 @@ class SunricherService {
         this.id = id;
         this.clientId = clientId;
 
-        this.sendPowerState = (roomId, on, delayAfter = 10) => {
+        this.sendPowerState = (on, delayAfter = 10) => {
         };
     
-        this.sendRgbColor = (roomId, color, delayAfter = 10) => {
+        this.sendRgbColor = (color, delayAfter = 10) => {
         }    
         
-        this.sendRgbBrightness = (roomId, brightness, delayAfter = 10) => {
+        this.sendRgbBrightness = (brightness, delayAfter = 10) => {
         };
     
-        this.sendRgbWhiteBrightness = (roomId, brightness, repeatCount, delayAfter = 10) => {
+        this.sendRgbWhiteBrightness = (brightness, repeatCount, delayAfter = 10) => {
         };
     
-        this.sendRgbFadeState = (roomId, on, delayAfter = 10) => {
+        this.sendRgbFadeState = (on, delayAfter = 10) => {
         };
     
-        this.sendRgbFadeType = (roomId, fadeType, delayAfter = 10) => {
+        this.sendRgbFadeType = (fadeType, delayAfter = 10) => {
         };
     
-        this.sendWhiteBrightness = (roomId, brightness, delayAfter = 10) => {
+        this.sendWhiteBrightness = (brightness, delayAfter = 10) => {
         };
     }
 

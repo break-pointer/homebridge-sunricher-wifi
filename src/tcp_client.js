@@ -3,10 +3,11 @@ const net = require('net');
 const Utils = require('./utils');
 
 class TcpClient {
-    constructor(log, ip, port ) {
+    constructor(log, ip, port, timeout = 300000) {
         this._log = log;
         this.ip = ip;
         this.port = port;
+        this.timeout = timeout;
 
         this.state = 'idle';
         this.socket = null;
@@ -20,8 +21,8 @@ class TcpClient {
             }
     
             this.socket = new net.Socket({writable: true});
-            this.socket.setKeepAlive(true);
             this.socket.setNoDelay(true);
+            this.socket.setTimeout(this.timeout);
             await new Promise((resolve, reject) => {
                 try {
                     this.socket.once('error', err => {
@@ -37,6 +38,7 @@ class TcpClient {
                     reject(err);
                 }
             });
+            this.socket.on('close', this.onClose);
             this.socket.on('timeout', this.onTimeout);
             this.socket.on('error', this.onError);
    
@@ -101,12 +103,20 @@ class TcpClient {
         };
 
         this.onTimeout = () => {
-            this._log.error(`TcpClient: connection to ${this.ip}:${this.port} timed out`);
+            this._log.debug(`Timeout: connection to ${this.ip}:${this.port} timed out`);
             this.disconnect();
         };
         
         this.onError = err => {
             this._log.error(`TcpClient: connection to ${this.ip}:${this.port} got error '${err.message || err}'\n`, err);
+
+            this.socket = null;
+            this.state = 'idle';
+        };
+
+        this.onClose = () => {
+            this._log.debug(`Close: socket closing`);
+
             this.socket = null;
             this.state = 'idle';
         }

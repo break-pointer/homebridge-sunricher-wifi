@@ -12,7 +12,7 @@
 1. Install the plugin using:
 
     ```shell
-    $ npm install -g homebridge-sunricher-wifi
+    $ npm install -g homebridge-sunricher-wifi --production
     ```
 
 2. Setup your controller with EasyLight application:
@@ -55,7 +55,7 @@
 | `id` | `number` | Zone ID in controller (from `1` to `8`) | Yes |  |
 | `type` | `string` | Let type (`rgbw` or `rgb` or `w`) | Yes |  |
 | `powerOnRestoreStateDelay` | number | Number of millseconds to wait after power on before sending other commands to LED. Normally you don't need to change default value, use it only if LED blinks during power on. | No | `500` |
-| `clientId` | Array of four bytes | Added to every packet sent to controller. Normally you don't need to change default value, pick something only if your controller doesn't respond to commands at all. The default value is something that worked for my device :) | No | `[0x99, 0x31, 0x5B, 0x01]` |
+| `clientId` | Array of three bytes | Added to every packet sent to controller. Normally you don't need to change default value, pick something only if your controller doesn't respond to commands at all. The default value is something that worked for my device :) | No | `[0x99, 0x31, 0x5B]` |
 
 ## Supported controllers
 

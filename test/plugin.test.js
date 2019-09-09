@@ -59,7 +59,7 @@ describe('Test plugin', () => {
         expect(instance.id).toBe(1);
         expect(instance.type).toBe('rgbw');
         expect(instance.powerOnRestoreStateDelay).toBe(500);
-        expect(instance.clientId).toEqual([0x99, 0x31, 0x5B, 0x01]);
+        expect(instance.clientId).toEqual([0x99, 0x31, 0x5B]);
         expect(instance.state).toBeDefined();
         expect(instance.sunricherService).toBeDefined();
     });

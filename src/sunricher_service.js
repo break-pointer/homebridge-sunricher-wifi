@@ -9,47 +9,48 @@ class SunricherService {
         this.port = port;
         this.id = id;
         this.clientId = clientId;
+        this.lastMessageTs = 0;
 
-        this.sendPowerState = (roomId, on, delayAfter = 10) => {
-            return this.enqueue(this.getMessage(roomId, 0x02, 0x0A, 0x92 + ((roomId - 1) * 3 + on)), delayAfter);
+        this.sendPowerState = (on, delayAfter = 10) => {
+            return this.enqueue(this.getMessage(0x02, 0x0A, 0x92 + ((this.id - 1) * 3 + on)), delayAfter);
         };
 
-        this.sendRgbColor = (roomId, color, delayAfter = 10) => {
+        this.sendRgbColor = (color, delayAfter = 10) => {
             return Promise.all([
-                this.enqueue(this.getMessage(roomId, 0x08, 0x48, color.red), 10),
-                this.enqueue(this.getMessage(roomId, 0x08, 0x49, color.green), 10),
-                this.enqueue(this.getMessage(roomId, 0x08, 0x4A, color.blue), delayAfter)
+                this.enqueue(this.getMessage(0x08, 0x48, color.red), 10),
+                this.enqueue(this.getMessage(0x08, 0x49, color.green), 10),
+                this.enqueue(this.getMessage(0x08, 0x4A, color.blue), delayAfter)
             ]);
         };
 
-        this.sendRgbBrightness = (roomId, brightness, delayAfter = 10) => {
+        this.sendRgbBrightness = (brightness, delayAfter = 10) => {
             if (brightness !== 0) {
                 brightness = Utils.Clamp(1, 10, 1 + Math.trunc(brightness / 12.5));
             }
 
-            return this.enqueue(this.getMessage(roomId, 0x08, 0x23, brightness), delayAfter);
+            return this.enqueue(this.getMessage(0x08, 0x23, brightness), delayAfter);
         };
 
-        this.sendRgbWhiteBrightness = (roomId, brightness, repeatCount, delayAfter = 10) => {
+        this.sendRgbWhiteBrightness = (brightness, repeatCount, delayAfter = 10) => {
             brightness = Math.trunc(brightness * 2.55);
 
-            return this.enqueue(this.getMessage(roomId, 0x08, 0x4B, brightness), delayAfter);
+            return this.enqueue(this.getMessage(0x08, 0x4B, brightness), delayAfter);
         };
 
-        this.sendRgbFadeState = (roomId, on, delayAfter = 10) => {
-            return this.enqueue(this.getMessage(roomId, 0x02, on ? 0x4E : 0x4F, 0x15), delayAfter);
+        this.sendRgbFadeState = (on, delayAfter = 10) => {
+            return this.enqueue(this.getMessage(0x02, on ? 0x4E : 0x4F, 0x15), delayAfter);
         };
 
-        this.sendRgbFadeType = (roomId, fadeType, delayAfter = 10) => {
+        this.sendRgbFadeType = (fadeType, delayAfter = 10) => {
             fadeType = Utils.Clamp(1, 8, 1 + Math.trunc(fadeType / 12.5));
 
-            return this.enqueue(this.getMessage(roomId, 0x08, 0x22, fadeType), delayAfter);
+            return this.enqueue(this.getMessage(0x08, 0x22, fadeType), delayAfter);
         };
 
-        this.sendWhiteBrightness = (roomId, brightness, delayAfter = 10) => {
+        this.sendWhiteBrightness = (brightness, delayAfter = 10) => {
             brightness = Math.trunc(brightness * 2.55);
 
-            return this.enqueue(this.getMessage(roomId, 0x08, 0x38, brightness), delayAfter);
+            return this.enqueue(this.getMessage(0x08, 0x38, brightness), delayAfter);
         };
 
         this.sendMessage = async message => {
@@ -74,10 +75,18 @@ class SunricherService {
         };
 
         this.enqueue = (message, delayAfter) => {
+            const now = new Date().getTime();
+            if (now - this.lastMessageTs > 300000) {
+                this.lastMessageTs = now;
+                this.queue.enqueue(this.getWakeupMessage(), 100)
+            }
+
             return this.queue.enqueue(message, delayAfter);
         };
 
-        this.getMessage = (roomId, category, subCategory, value) => {
+        this.getWakeupMessage = () => this.getMessage(this.id, 0, 0, 0);
+
+        this.getMessage = (category, subCategory, value) => {
             const result = new Uint8Array(12);
 
             // marker
@@ -86,9 +95,9 @@ class SunricherService {
             result[1] = this.clientId[0];
             result[2] = this.clientId[1];
             result[3] = this.clientId[2];
-            result[4] = this.clientId[3];
+            result[4] = 0x01;
             // zone
-            result[5] = 1 << (roomId - 1);
+            result[5] = 1 << (this.id - 1);
             // category
             result[6] = category;
             // sub-category
@@ -101,7 +110,7 @@ class SunricherService {
             result[10] = 0xAA;
             result[11] = 0xAA;
 
-            this._log.debug(Utils.FormatTrace(this.getMessage,{roomId, category, subCategory, value}, result));
+            this._log.debug(Utils.FormatTrace(this.getMessage,{category, subCategory, value}, result));
 
             return result;
         };

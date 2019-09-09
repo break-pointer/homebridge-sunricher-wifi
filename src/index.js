@@ -20,7 +20,7 @@ class SunricherWifi {
         this.id = config.id;
         this.type = config.type;
         this.powerOnRestoreStateDelay = config.powerOnRestoreStateDelay || 500;
-        this.clientId = config.clientId || [0x99, 0x31, 0x5B, 0x01];
+        this.clientId = config.clientId || [0x99, 0x31, 0x5B];
         this.state = Utils.Clone({
             rgb: {
                 on: false,
@@ -69,17 +69,17 @@ class SunricherWifi {
         this.sendBrightness = (type, value, delayAfter = 10) => {
             if (this.hasRgb()) {
                 if (type === 'rgb') {
-                    return this.sunricherService.sendRgbBrightness(this.id, value, delayAfter);
+                    return this.sunricherService.sendRgbBrightness(value, delayAfter);
                 } else if (type === 'white') {
-                    return this.sunricherService.sendRgbWhiteBrightness(this.id, value, delayAfter);
+                    return this.sunricherService.sendRgbWhiteBrightness(value, delayAfter);
                 }
             } else if (this.hasWhite()) {
-                return this.sunricherService.sendWhiteBrightness(this.id, value, delayAfter);
+                return this.sunricherService.sendWhiteBrightness(value, delayAfter);
             }
         };
 
         this.sendRgbColor = (delayAfter = 10) => {
-            return this.sunricherService.sendRgbColor(this.id, this.state.rgb.color, delayAfter);
+            return this.sunricherService.sendRgbColor(this.state.rgb.color, delayAfter);
         };
 
         this.identify = callback => {
@@ -193,7 +193,7 @@ class SunricherWifi {
 
             if (this.hasRgb() && this.hasWhite()) {
                 if ((newRgbPower || newFadePower || newWhitePower) && !(oldRgbPower || oldFadePower || oldWhitePower)) {
-                    promises.push(this.sunricherService.sendPowerState(this.id, true, this.powerOnRestoreStateDelay));
+                    promises.push(this.sunricherService.sendPowerState(true, this.powerOnRestoreStateDelay));
                 }
 
                 if (newPowerState && !oldPowerState) {
@@ -205,13 +205,13 @@ class SunricherWifi {
                         }
 
                         if (!(newFadePower || newWhitePower)) {
-                            promises.push(this.sunricherService.sendRgbFadeState(this.id, false, 100));
+                            promises.push(this.sunricherService.sendRgbFadeState(false, 100));
                             promises.push(this.sendBrightness('white', 0, 100));
                         }
                     } else if (type === 'fade') {
                         // restore own state
-                        promises.push(this.sunricherService.sendRgbFadeState(this.id, state.on, 100));
-                        promises.push(this.sunricherService.sendRgbFadeType(this.id, state.brightness, 100));
+                        promises.push(this.sunricherService.sendRgbFadeState(state.on, 100));
+                        promises.push(this.sunricherService.sendRgbFadeType(state.brightness, 100));
 
                         if (!(newRgbPower || newWhitePower)) {
                             promises.push(this.sendBrightness('rgb', this.state.rgb.brightness || 1, 100));
@@ -222,7 +222,7 @@ class SunricherWifi {
                         promises.push(this.sendBrightness(type, state.brightness || 1, 100));
 
                         if (!(newRgbPower || newFadePower)) {
-                            promises.push(this.sunricherService.sendRgbFadeState(this.id, false, 100));
+                            promises.push(this.sunricherService.sendRgbFadeState(false, 100));
                             promises.push(this.sendBrightness('rgb', 0, 100));
                         }
                     }
@@ -233,7 +233,7 @@ class SunricherWifi {
                         }
                     } else if (type === 'fade') {
                         if (newRgbPower || newWhitePower) {
-                            promises.push(this.sunricherService.sendRgbFadeState(this.id, state.on, 100));
+                            promises.push(this.sunricherService.sendRgbFadeState(state.on, 100));
                         }
                     } else if (type === 'white') {
                         if (newRgbPower || newFadePower) {
@@ -243,11 +243,11 @@ class SunricherWifi {
                 }
 
                 if (!(newRgbPower || newFadePower || newWhitePower)) {
-                    promises.push(this.sunricherService.sendPowerState(this.id, false, 1000));
+                    promises.push(this.sunricherService.sendPowerState(false, 1000));
                 }
             } else if (this.hasRgb() && !this.hasWhite()) {
                 if ((newRgbPower || newFadePower) && !(oldRgbPower || oldFadePower)) {
-                    promises.push(this.sunricherService.sendPowerState(this.id, true, this.powerOnRestoreStateDelay));
+                    promises.push(this.sunricherService.sendPowerState(true, this.powerOnRestoreStateDelay));
                 } 
 
                 if (newPowerState && !oldPowerState) {
@@ -257,12 +257,12 @@ class SunricherWifi {
 
                         if (!newFadePower) {
                             promises.push(this.sendRgbColor(100));
-                            promises.push(this.sunricherService.sendRgbFadeState(this.id, false, 100));
+                            promises.push(this.sunricherService.sendRgbFadeState(false, 100));
                         }
                     } else if (type === 'fade') {
                         // restore own state
-                        promises.push(this.sunricherService.sendRgbFadeState(this.id, state.on, 100));
-                        promises.push(this.sunricherService.sendRgbFadeType(this.id, state.brightness, 100));
+                        promises.push(this.sunricherService.sendRgbFadeState(state.on, 100));
+                        promises.push(this.sunricherService.sendRgbFadeType(state.brightness, 100));
 
                         if (!newRgbPower) {
                             promises.push(this.sendBrightness('rgb', this.state.rgb.brightness || 1, 100));
@@ -273,22 +273,22 @@ class SunricherWifi {
                         // do nothing
                     } else if (type === 'fade') {
                         if (newRgbPower) {
-                            promises.push(this.sunricherService.sendRgbFadeState(this.id, state.on, 100));
+                            promises.push(this.sunricherService.sendRgbFadeState(state.on, 100));
                         }
                     }
                 }
 
                 if (!(newRgbPower || newFadePower)) {
-                    promises.push(this.sunricherService.sendPowerState(this.id, false, 1000));
+                    promises.push(this.sunricherService.sendPowerState(false, 1000));
                 }
             } else if (!this.hasRgb() && this.hasWhite()) {
                 if (newWhitePower && !oldWhitePower) {
-                    promises.push(this.sunricherService.sendPowerState(this.id, true, this.powerOnRestoreStateDelay));
+                    promises.push(this.sunricherService.sendPowerState(true, this.powerOnRestoreStateDelay));
                     promises.push(this.sendBrightness(type, state.brightness));
                 }
 
                 if (!newWhitePower && oldWhitePower) {
-                    promises.push(this.sunricherService.sendPowerState(this.id, false, 1000));
+                    promises.push(this.sunricherService.sendPowerState(false, 1000));
                 }
             }
 
@@ -313,7 +313,7 @@ class SunricherWifi {
             state.brightness = brightness;
 
             if (type === 'fade') {
-                await this.sunricherService.sendRgbFadeType(this.id, brightness);
+                await this.sunricherService.sendRgbFadeType(brightness);
             } else {
                 await this.sendBrightness(type, brightness);
             }
