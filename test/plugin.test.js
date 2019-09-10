@@ -49,6 +49,7 @@ describe('Test plugin', () => {
         port: 8899,
         id: 1,
         type: 'rgbw',
+        clientId: '153, 49, 91'
     };
 
     test('It parses config', () => {

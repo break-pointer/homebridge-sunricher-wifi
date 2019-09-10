@@ -20,7 +20,11 @@ class SunricherWifi {
         this.id = config.id;
         this.type = config.type;
         this.powerOnRestoreStateDelay = config.powerOnRestoreStateDelay || 500;
-        this.clientId = config.clientId || [0x99, 0x31, 0x5B];
+        if (config.clientId) {
+            this.clientId = Array.isArray(config.clientId) ? config.clientId : config.clientId.split(',').map(n => Number(n.trim()));
+        } else {
+            this.clientId = [0x99, 0x31, 0x5B]
+        }
         this.state = Utils.Clone({
             rgb: {
                 on: false,

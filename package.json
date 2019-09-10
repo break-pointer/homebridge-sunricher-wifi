@@ -1,6 +1,6 @@
 {
   "name": "homebridge-sunricher-wifi",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Homedridge plugin to control Sunricher (or Arlight) WiFi-RF controllers",
   "main": "./src/index.js",
   "scripts": {

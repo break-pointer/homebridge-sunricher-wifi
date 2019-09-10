@@ -1,0 +1,175 @@
+{
+  "pluginAlias": "SunricherWifi",
+  "pluginType": "accessory",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "placeholder": "e.g. Bedroom ambient light",
+        "type": "string",
+        "minLength": 1,
+        "required": true,
+        "validationMessages": {
+          "required": "Please provide name"
+        }
+      },
+      "ip": {
+        "title": "Controller IP",
+        "description": "IP address of controller paired with this LED",
+        "placeholder": "e.g. 192.168.0.100",
+        "pattern": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$",
+        "validationMessages": {
+            "pattern": "Please provide a valid IP address",
+            "required": "Please provide a valid IP address"
+        },
+        "type": "string",
+        "required": true
+      },
+      "port": {
+          "title": "Controller Port",
+          "description": "TCP port on controller",
+          "type": "integer",
+          "default": 8889,
+          "maximum": 65535,
+          "required": true,
+          "validationMessages": {
+            "required": "Port must be in 1-65535",
+            "minimum": "Port must be in 1-65535",
+            "maximum": "Port must be in 1-65535"
+          }
+      },
+      "id": {
+        "title": "Zone ID in controller",
+        "placeholder": "Plase select zone",
+        "description": "Zone ID assigned to this LED in controller.<br/>Must be unique over LEDs connected to the same controller",
+        "type": "integer",
+        "oneOf": [
+          {
+            "title": "1",
+            "enum": [
+              1
+            ]
+          },
+          {
+            "title": "2",
+            "enum": [
+              2
+            ]
+          },
+          {
+            "title": "3",
+            "enum": [
+              3
+            ]
+          },
+          {
+            "title": "4",
+            "enum": [
+              4
+            ]
+          },
+          {
+            "title": "5",
+            "enum": [
+              5
+            ]
+          },
+          {
+            "title": "6",
+            "enum": [
+              6
+            ]
+          },
+          {
+            "title": "7",
+            "enum": [
+              7
+            ]
+          },
+          {
+            "title": "8",
+            "enum": [
+              8
+            ]
+          }
+        ],
+        "required": true
+      },
+      "type": {
+        "title": "LED type",
+        "type": "string",
+        "default": "rgbw",
+        "oneOf": [
+          {
+              "title": "RGB+White",
+              "enum": [
+                "rgbw"
+              ]
+          },
+          {
+              "title": "RGB",
+              "enum": [
+                "rgb"
+              ]
+          },
+          {
+              "title": "White",
+              "enum": [
+                "w"
+              ]
+          }
+        ],
+        "required": true
+      },
+      "powerOnRestoreStateDelay": {
+        "title": "Power on delay",
+        "description": "Number of millseconds to wait after power on before sending other commands to LED.<br/>Normally you don't need to change default value, use it only if LED blinks during power on.",
+        "type": "integer",
+        "default": 500,
+        "minimum": 500,
+        "maximum": 5000,
+        "required": true
+      },
+      "clientId": {
+        "title": "Unique seed numbers",
+        "description": "Added to every packet sent to controller.<br/>Normally you don't need to change default value, pick something only if your controller doesn't respond to commands at all.",
+        "default": "153, 49, 91",
+        "placeholder": "e.g. 153, 49, 91",
+        "pattern": "^[ ]*([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[ ]*\\,[ ]*([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[ ]*\\,[ ]*([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])[ ]*$",
+        "validationMessages": {
+            "pattern": "Please provide a three comma separated numbers, each maximum of 255",
+            "required": "Please provide a three comma separated numbers, each maximum of 255"
+        },
+        "type": "string",
+        "required": true
+      }
+    }
+  },
+  "layout": [
+    "name",
+    {
+      "type": "flex",
+      "flex-flow": "row wrap",
+      "items": [
+        "ip",
+        "port"
+      ]
+    },
+    {
+      "type": "flex",
+      "flex-flow": "row wrap",
+      "items": [
+        "id",
+        "type"
+      ]
+    },
+    {
+      "type": "fieldset",
+      "expandable": true,
+      "title": "Advanced",
+      "items": ["powerOnRestoreStateDelay", "clientId"]
+    }
+  ]
+}
+  
