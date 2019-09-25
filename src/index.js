@@ -1,5 +1,10 @@
+const fs = require('fs');
+const path = require('path');
+
 const Utils = require('./utils');
 
+let Homebridge;
+let User;
 let Service;
 let Characteristic;
 let SunricherService;
@@ -14,18 +19,23 @@ class SunricherWifi {
     constructor(log, config) {
         this._log = log;
 
-        this.name = config.name;
-        this.ip = config.ip;
-        this.port = config.port;
-        this.id = config.id;
-        this.type = config.type;
-        this.powerOnRestoreStateDelay = config.powerOnRestoreStateDelay || 500;
-        if (config.clientId) {
-            this.clientId = Array.isArray(config.clientId) ? config.clientId : config.clientId.split(',').map(n => Number(n.trim()));
-        } else {
-            this.clientId = [0x99, 0x31, 0x5B]
-        }
-        this.state = Utils.Clone({
+        this.parseConfig(config);
+        this.restoreState();
+        this.initSunricherService();
+        this.initHomebridgeServices();
+
+        Homebridge.on('shutdown', () => {
+            this.persistState();
+            this.sunricherService.shutdown();
+        });
+    }
+
+    getStatePath() {
+        return path.join(User.persistPath(), 'home-bridge-sunricher-wifi.state.json');
+    }
+
+    restoreState() {
+        let state = {
             rgb: {
                 on: false,
                 hue: 120,
@@ -47,46 +57,80 @@ class SunricherWifi {
                 on: false,
                 brightness: 50
             }
-        });
-        this.sunricherService = new SunricherService(log, this.ip, this.port, this.id, this.clientId);
+        };
+        try {
+            const text = fs.readFileSync(this.getStatePath(), {encoding: 'utf8'});
+            state = JSON.parse(text);
+            this._log.info('Got persisted state');
+        } catch (err) {
+            this._log.info('State not persisted');
+        }
+        this.state = state;
+    }
 
-        this.getState = type => {
-            return this.state[type];
-        };
+    persistState() {
+        fs.writeFileSync(this.getStatePath(), JSON.stringify(this.state, null, 4), {encoding: 'utf8'});
+        this._log.info('State persisted');
+    }
 
-        this.hasRgb = () => {
-            return this.type.indexOf('rgb') > -1;
-        };
-    
-        this.hasWhite = () => {
-            return this.type.indexOf('w') > -1;
-        };
-    
-        this.formatSourceName = suffix => {
-            if (this.hasRgb()) {
-                return `${this.name} (${suffix})`;
+    parseConfig(config) {
+        this.name = config.name;
+        this.ip = config.ip;
+        this.port = config.port;
+        this.id = config.id;
+        this.type = config.type;
+        this.powerOnRestoreStateDelay = config.powerOnRestoreStateDelay || 500;
+        if (config.clientId) {
+            this.clientId = Array.isArray(config.clientId) ? config.clientId : config.clientId.split(',').map(n => Number(n.trim()));
+        }
+        else {
+            this.clientId = [0x99, 0x31, 0x5B];
+        }
+    }
+
+    initSunricherService() {
+        this.sunricherService = new SunricherService(this._log, this.ip, this.port, this.id, this.clientId);
+    }
+
+    getState(type) {
+        return this.state[type];
+    }
+
+    hasRgb() {
+        return this.type.indexOf('rgb') > -1;
+    }
+
+    hasWhite() {
+        return this.type.indexOf('w') > -1;
+    }
+
+    formatSourceName(suffix) {
+        if (this.hasRgb()) {
+            return `${this.name} - ${suffix}`;
+        }
+
+        return this.name;
+    }
+
+    sendBrightness(type, value, delayAfter = 10) {
+        if (this.hasRgb()) {
+            if (type === 'rgb') {
+                return this.sunricherService.sendRgbBrightness(value, delayAfter);
+            } else if (type === 'white') {
+                return this.sunricherService.sendRgbWhiteBrightness(value, delayAfter);
             }
+        } else if (this.hasWhite()) {
+            return this.sunricherService.sendWhiteBrightness(value, delayAfter);
+        }
+    }
 
-            return this.name;
-        };
+    sendRgbColor(delayAfter = 10) {
+        return this.sunricherService.sendRgbColor(this.state.rgb.color, delayAfter);
+    }
 
-        this.sendBrightness = (type, value, delayAfter = 10) => {
-            if (this.hasRgb()) {
-                if (type === 'rgb') {
-                    return this.sunricherService.sendRgbBrightness(value, delayAfter);
-                } else if (type === 'white') {
-                    return this.sunricherService.sendRgbWhiteBrightness(value, delayAfter);
-                }
-            } else if (this.hasWhite()) {
-                return this.sunricherService.sendWhiteBrightness(value, delayAfter);
-            }
-        };
-
-        this.sendRgbColor = (delayAfter = 10) => {
-            return this.sunricherService.sendRgbColor(this.state.rgb.color, delayAfter);
-        };
-
+    initHomebridgeServices() {
         this.identify = callback => {
+            this._log.info('Identify');
             this._log.debug(Utils.FormatTrace('identify'));
     
             callback(null);
@@ -314,12 +358,16 @@ class SunricherWifi {
     
             this._log.debug(Utils.FormatTrace('setBrightness', {id: this.id, type, brightness}));
     
-            state.brightness = brightness;
+            if (brightness > 0) {
+                state.brightness = brightness;
+            }
 
-            if (type === 'fade') {
-                await this.sunricherService.sendRgbFadeType(brightness);
-            } else {
-                await this.sendBrightness(type, brightness);
+            if (state.on) {
+                if (type === 'fade') {
+                    await this.sunricherService.sendRgbFadeType(brightness);
+                } else {
+                    await this.sendBrightness(type, brightness);
+                }
             }
 
             callback(null);
@@ -341,7 +389,10 @@ class SunricherWifi {
             state.lastColorSetTs = new Date().getTime();
             state.hue = hue;
             state.color = Utils.HsbToRgb(state.hue, state.saturation, state.brightness);
-            await this.sendRgbColor();
+
+            if (state.on) {
+                await this.sendRgbColor();
+            }
     
             callback(null);
         }
@@ -362,7 +413,10 @@ class SunricherWifi {
             state.lastColorSetTs = new Date().getTime();
             state.saturation = saturation;
             state.color = Utils.HsbToRgb(state.hue, state.saturation, state.brightness);
-            await this.sendRgbColor();
+
+            if (state.on) {
+                await this.sendRgbColor();
+            }
 
             callback(null);
         }
@@ -395,13 +449,13 @@ class SunricherWifi {
             state.saturation = hsb.saturation;
             state.color = rgb;
             
-            await this.sendRgbColor();
+            if (state.on) {
+                await this.sendRgbColor();
+            }
 
             callback(null);
         }
-
     }
-
 }
 
 /**
@@ -412,12 +466,16 @@ module.exports = function(homebridge, mocks) {
     if (mocks && mocks.isUnderTest) {
         SunricherService = mocks.SunricherService;
 
+        Homebridge = mocks.Homebridge;
+        User = mocks.user;
         Service = mocks.Service;
         Characteristic = mocks.Characteristic;
         mocks.registerAccessory('homebridge-sunricher-wifi', 'SunricherWifi', SunricherWifi);
     } else {
         SunricherService = require('./sunricher_service');
 
+        Homebridge = homebridge;
+        User = homebridge.user;
         Service = homebridge.hap.Service;
         Characteristic = homebridge.hap.Characteristic;
         homebridge.registerAccessory('homebridge-sunricher-wifi', 'SunricherWifi', SunricherWifi);

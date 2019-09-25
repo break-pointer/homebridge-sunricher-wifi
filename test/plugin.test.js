@@ -4,6 +4,8 @@ const Mocks = require('./mocks')
 function getMocks() {
     return {
         isUnderTest: true,
+        Homebridge: {on: jest.fn((event) => true)},
+        User: {persistPath: jest.fn(() => process.cwd())},
         Service: {
             AccessoryInformation: Mocks.AccessoryInformation,
             Lightbulb: Mocks.Lightbulb
@@ -87,13 +89,13 @@ describe('Test plugin', () => {
         expect(informationService.characteristics.Model).toBe('Wifi Led Controller');
         expect(informationService.characteristics.SerialNumber).toBe(`${config.ip}:${config.port}:${config.id}`);
 
-        const rgbStrip = services.find(s => s.name === 'Test name (RGB)');
+        const rgbStrip = services.find(s => s.name === 'Test name - RGB');
         expect(rgbStrip.characteristics).toHaveLength(5);
 
-        const rgbFade = services.find(s => s.name === 'Test name (RGB Fade)');
+        const rgbFade = services.find(s => s.name === 'Test name - RGB Fade');
         expect(rgbFade.characteristics).toHaveLength(2);
 
-        const white = services.find(s => s.name === 'Test name (White)');
+        const white = services.find(s => s.name === 'Test name - White');
         expect(white.characteristics).toHaveLength(2);
     });
 
@@ -102,7 +104,7 @@ describe('Test plugin', () => {
 
         const services = instance.getServices();
 
-        const rgbStrip = services.find(s => s.name === 'Test name (RGB)');
+        const rgbStrip = services.find(s => s.name === 'Test name - RGB');
 
         // On
         const on = rgbStrip.characteristics.find(c => c instanceof Mocks.On);

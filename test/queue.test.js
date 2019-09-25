@@ -4,7 +4,8 @@ const Mocks = require('./mocks');
 describe('Test queue', () => {
     test('It should deliver messages in order', async () => {
         const action = jest.fn(message => message);
-        const queue = new Queue(Mocks.Log, action)
+        const queue = new Queue(Mocks.Log, action);
+        queue.start();
 
         queue.enqueue(1);
         queue.enqueue(2);
@@ -20,6 +21,7 @@ describe('Test queue', () => {
     test('It handles async results', async () => {
         const action = jest.fn(message => message[message.prop].length);
         const queue = new Queue(Mocks.Log, action);
+        queue.start();
 
         await expect(queue.enqueue({text: '123', prop: 'text'})).resolves.toBe(3);
         await expect(queue.enqueue({text: '', prop: 'text1'})).rejects.toThrow(`Cannot read property 'length' of undefined`);

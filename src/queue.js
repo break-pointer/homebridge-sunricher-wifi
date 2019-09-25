@@ -5,6 +5,8 @@ class Queue {
         this._log = log;
         this.action = action;
         this.queue = [];
+        this.stopped = false;
+        this.timeout = null;
 
         this.enqueue = (message, delayAfter = 10) => {
             this._log.debug(Utils.FormatTrace('enqueue', {message, delayAfter}));
@@ -16,7 +18,7 @@ class Queue {
                 asyncReject = reject;
             });
 
-            this.queue.push({message, delayAfter, asyncResolve, asyncReject});
+            this.queue.push({message, delayAfter, asyncResolve, asyncReject, isRunning: false});
 
             return asyncResult;
         }
@@ -29,11 +31,13 @@ class Queue {
                 let error;
                 let result;
                 try {
+                    item.isRunning = true;
                     result = await this.action(item.message);
                 } catch(err) {
                     this._log.error(`Queue: handler error '${err.message || err}'\n`, err);
                     error = err;
                 }
+                item.isRunning = false;
                 try {
                     if (error) {
                         item.asyncReject(error);
@@ -44,11 +48,28 @@ class Queue {
                     this._log.error(`Queue: result notify error '${err.message || err}'\n`, err);
                 }
             }
-            this.timeout = setTimeout(this.handler, delayAfter);
+            if (!this.stopped) {
+                this.timeout = setTimeout(this.handler, delayAfter);
+            }
         }
 
-        this.timeout = null;
-        this.handler();
+        this.start = () => {
+            this._log.info('Staring queue');
+            this.stopped = false;
+            this.handler();
+        }
+
+        this.stop = () => {
+            this._log.info(`Stopping queue with ${this.queue.length} items to process`);
+
+            this.stopped = true;
+            this.queue.forEach(item => !item.isRunning && item.asyncReject(new Error('Exit')));
+            this.queue = [];
+            clearTimeout(this.timeout);
+            this.timeout = null;
+
+            this._log.info('Queue stopped')
+        }
     }
 }
 
