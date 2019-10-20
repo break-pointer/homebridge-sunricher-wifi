@@ -1,19 +1,21 @@
 {
   "pluginAlias": "SunricherWifi",
-  "pluginType": "accessory",
+  "pluginType": "platform",
   "schema": {
     "type": "object",
     "properties": {
       "name": {
-        "title": "Name",
-        "placeholder": "e.g. Bedroom ambient light",
+        "title": "Plugin name",
+        "description": "Required by Homebridge",
+        "placeholder": "e.g., Sunricher",
         "type": "string",
+        "default": "Sunricher",
         "minLength": 1,
         "required": true,
         "validationMessages": {
-          "required": "Please provide name"
+          "required": "Please provide plugin name"
         }
-      },
+      },      
       "ip": {
         "title": "Controller IP",
         "description": "IP address of controller paired with this LED",
@@ -39,88 +41,103 @@
             "maximum": "Port must be in 1-65535"
           }
       },
-      "id": {
-        "title": "Zone ID in controller",
-        "placeholder": "Plase select zone",
-        "description": "Zone ID assigned to this LED in controller.<br/>Must be unique over LEDs connected to the same controller",
-        "type": "integer",
-        "oneOf": [
-          {
-            "title": "1",
-            "enum": [
-              1
-            ]
+      "devices": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "title": "Name",
+              "placeholder": "e.g. Bedroom ambient light",
+              "validationMessages": {
+                "required": "Please provide name"
+              }
+            },
+            "type": {
+              "type": "string",
+              "default": "rgbw",
+              "oneOf": [
+                {
+                    "title": "RGB+White",
+                    "enum": [
+                      "rgbw"
+                    ]
+                },
+                {
+                    "title": "RGB",
+                    "enum": [
+                      "rgb"
+                    ]
+                },
+                {
+                    "title": "White",
+                    "enum": [
+                      "w"
+                    ]
+                }
+              ],
+              "title": "LED type"
+            },
+            "id": {
+              "type": "integer",
+              "oneOf": [
+                {
+                  "title": "1",
+                  "enum": [
+                    1
+                  ]
+                },
+                {
+                  "title": "2",
+                  "enum": [
+                    2
+                  ]
+                },
+                {
+                  "title": "3",
+                  "enum": [
+                    3
+                  ]
+                },
+                {
+                  "title": "4",
+                  "enum": [
+                    4
+                  ]
+                },
+                {
+                  "title": "5",
+                  "enum": [
+                    5
+                  ]
+                },
+                {
+                  "title": "6",
+                  "enum": [
+                    6
+                  ]
+                },
+                {
+                  "title": "7",
+                  "enum": [
+                    7
+                  ]
+                },
+                {
+                  "title": "8",
+                  "enum": [
+                    8
+                  ]
+                }
+              ],
+              "title": "Zone ID in controller",
+              "placeholder": "Plase select zone",
+              "description": "Zone ID assigned to this LED in controller.<br/>Must be unique over LEDs connected to the same controller"
+            }
           },
-          {
-            "title": "2",
-            "enum": [
-              2
-            ]
-          },
-          {
-            "title": "3",
-            "enum": [
-              3
-            ]
-          },
-          {
-            "title": "4",
-            "enum": [
-              4
-            ]
-          },
-          {
-            "title": "5",
-            "enum": [
-              5
-            ]
-          },
-          {
-            "title": "6",
-            "enum": [
-              6
-            ]
-          },
-          {
-            "title": "7",
-            "enum": [
-              7
-            ]
-          },
-          {
-            "title": "8",
-            "enum": [
-              8
-            ]
-          }
-        ],
-        "required": true
-      },
-      "type": {
-        "title": "LED type",
-        "type": "string",
-        "default": "rgbw",
-        "oneOf": [
-          {
-              "title": "RGB+White",
-              "enum": [
-                "rgbw"
-              ]
-          },
-          {
-              "title": "RGB",
-              "enum": [
-                "rgb"
-              ]
-          },
-          {
-              "title": "White",
-              "enum": [
-                "w"
-              ]
-          }
-        ],
-        "required": true
+          "required": [ "name", "type", "id" ]
+        }
       },
       "powerOnRestoreStateDelay": {
         "title": "Power on delay",
@@ -156,13 +173,25 @@
         "port"
       ]
     },
-    {
-      "type": "flex",
-      "flex-flow": "row wrap",
-      "items": [
-        "id",
-        "type"
-      ]
+    { 
+      "type": "array",
+      "key": "devices",
+      "listItems": 0,
+      "items": [ {
+        "type": "div",
+        "items": [
+          { 
+            "key": "devices[].name"
+          },
+          { 
+            "key": "devices[].type" 
+          },
+          { 
+            "key": "devices[].id"
+          }
+        ]
+      } ],
+      "title": "Devices"
     },
     {
       "type": "fieldset",

@@ -21,25 +21,25 @@
 
 3. Update the Homebridge configuration:
 
-    Add *each* zone  configuration as single accessory to the `accessories` node with valid values (see description below):
+    Add the following node to `platforms` section of Homebridge config (or refer to working [example](examples/sample.config.json)):
 
     ```json
-    "accessories": [
+    "platforms": [
         {
-            "accessory": "SunricherWifi",
-            "name": "Ambient light",
+            "platform": "SunricherWifi",
+            "name": "Sunricher",
             "ip": CONTROLLER_IP_ADDRESS,
             "port": CONTROLLER_PORT,
-            "id": ZONE_ID,
-            "type": ZONE_LED_TYPE
-        },
-        {
-            "accessory": "SunricherWifi",
-            "name": "Ambient light",
-            "ip": CONTROLLER_IP_ADDRESS,
-            "port": CONTROLLER_PORT,
-            "id": ANOTHER_ZONE_ID,
-            "type": ANOTHER_ZONE_LED_TYPE
+            "devices": [
+                {
+                    "id": ZONE_ID,
+                    "type": ZONE_LED_TYPE
+                },
+                {
+                    "id": ANOTHER_ZONE_ID,
+                    "type": ANOTHER_ZONE_LED_TYPE
+                }
+            ]
         }
     ]
     ```
@@ -53,6 +53,7 @@
 | `ip` | `string` | IP address of your controller | Yes | |
 | `port` | `number` | TCP port on controller | Yes | 8899 |
 | `id` | `number` | Zone ID in controller (from `1` to `8`) | Yes |  |
+| `name` | `string` | Zone name (e.g. Kitchen) | Yes |  |
 | `type` | `string` | LED type (`rgbw` or `rgb` or `w`) | Yes |  |
 | `powerOnRestoreStateDelay` | number | Number of millseconds to wait after power on before sending other commands to LED. Normally you don't need to change default value, use it only if LED blinks during power on. | No | `500` |
 | `clientId` | Array of three bytes | Added to every packet sent to controller. Normally you don't need to change default value, pick something only if your controller doesn't respond to commands at all. The default value is something that worked for my device :) | No | `153, 49, 91` |

@@ -1,5 +1,5 @@
-const Queue = require('../src/queue');
-const Mocks = require('./mocks');
+import {Queue} from '../src/queue';
+import * as Mocks from './mocks';
 
 describe('Test queue', () => {
     test('It should deliver messages in order', async () => {

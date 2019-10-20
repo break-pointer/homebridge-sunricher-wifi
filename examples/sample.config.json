@@ -1,8 +1,18 @@
 {
-    "accessory": "SunricherWifi",
-    "name": "Ambient light",
+    "platform": "SunricherWifi",
+    "name": "Sunricher",
     "ip": "10.1.1.4",
     "port": 8899,
-    "id": 1,
-    "type": "rgbw"
+    "devices": [
+        {
+            "name": "Living room",
+            "type": "rgbw",
+            "id": 1
+        },
+        {
+            "name": "Kitchen",
+            "type": "w",
+            "id": 2
+        }
+    ]
 }
