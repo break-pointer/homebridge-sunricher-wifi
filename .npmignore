@@ -1,7 +1,12 @@
+__mocks__
 .vscode
 .idea
+docs
+src
 test
 examples
 .gitignore
 .npmignore
-.eslintrc.json
+tsconfig.json
+tslint.json
+*.tgz

@@ -1,5 +1,8 @@
 .vscode
 .idea
+dist
+test/data
+__mocks__/data
 
 # Logs
 logs

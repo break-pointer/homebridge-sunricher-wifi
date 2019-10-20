@@ -1,11 +1,15 @@
 {
   "name": "homebridge-sunricher-wifi",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Homedridge plugin to control Sunricher (or Arlight) WiFi-RF controllers",
-  "main": "./src/index.js",
+  "main": "./dist/index.js",
   "scripts": {
-    "lint": "eslint ./src/**",
-    "test": "jest"
+    "prettier": "prettier --write \"./src/**\"",
+    "dev": "tsc -w",
+    "type-check": "tsc --skipLibCheck",
+    "lint": "tslint './src/**/*.{ts,tsx}'",
+    "test": "jest",
+    "build": "ttsc"
   },
   "repository": {
     "type": "git",
@@ -24,30 +28,36 @@
     "url": "https://github.com/break-pointer/homebridge-sunricher-wifi/issues"
   },
   "homepage": "https://github.com/break-pointer/homebridge-sunricher-wifi#readme",
-  "devDependencies": {
-    "@babel/plugin-proposal-class-properties": "^7.5.5",
-    "@babel/preset-env": "^7.5.5",
-    "babel-eslint": "^10.0.2",
-    "eslint": "^6.2.1",
-    "jest": "^24.9.0"
-  },
   "engines": {
     "node": ">=8.10.0",
     "homebridge": ">=0.4.45"
   },
-  "babel": {
-    "presets": [
-      [
-        "@babel/preset-env",
-        {
-          "targets": {
-            "node": "current"
-          }
-        }
-      ]
-    ],
-    "plugins": [
-      "@babel/plugin-proposal-class-properties"
-    ]
+  "prettier": {
+    "printWidth": 120,
+    "singleQuote": true,
+    "trailingComma": "es5",
+    "semi": true,
+    "tabWidth": 4,
+    "bracketSpacing": false
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testEnvironment": "node"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.18",
+    "@types/node": "^12.7.4",
+    "jest": "^24.9.0",
+    "prettier": "^1.18.2",
+    "ts-jest": "^24.0.2",
+    "ts-node": "^8.4.1",
+    "ts-transformer-imports": "^0.4.3",
+    "tslint": "^5.20.0",
+    "tslint-config-prettier": "^1.18.0",
+    "tslint-plugin-prettier": "^2.0.1",
+    "ttypescript": "^1.5.7",
+    "typescript": "^3.6.2"
   }
 }
